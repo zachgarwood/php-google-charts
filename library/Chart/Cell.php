@@ -1,5 +1,5 @@
 <?php
-namespace PhpGoogleCharts;
+namespace Chart;
 
 class Cell
 {
