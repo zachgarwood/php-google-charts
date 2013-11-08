@@ -3,79 +3,45 @@ class PhpGoogleChartsTest extends \PHPUnit_Framework_TestCase
 {
     public function setUp()
     {
-        $chart = new PhpGoogleCharts();
-        $this->dataTable = $chart->createDataTable();
+        $data = new DataTable\Data;
+        $col1 = new DataTable\Column(DataTable\Column::TYPE_BOOLEAN, 'boolean');
+        $col2 = new DataTable\Column(DataTable\Column::TYPE_STRING, 'string');
+
+        $cell1 = new DataTable\Cell($col1, true);
+        $cell2 = new DataTable\Cell($col2, 'string');
+        $row1 = new DataTable\Row;
+        $row1->setCell($cell1)->setCell($cell2);
+
+        $data->addColumn($col1)->addColumn($col2);
+        $data->insertRow($row1);
+
+        $this->chart = new PhpGoogleCharts\Chart(
+            PhpGoogleCharts\Chart::TYPE_PIE,
+            $data
+        );
     }
 
-    public function testExceptionOnDuplicatColumns()
+    public function testExceptionOnInvalidChartType()
     {
         $this->setExpectedException('InvalidArgumentException');
-        $column = new PhpGoogleCharts\Column(
-            PhpGoogleCharts\Column::TYPE_BOOLEAN,
-            'test'
-        );
-        $this->dataTable->addColumn($column);
-        $this->dataTable->addColumn($column);
-    }
-
-    public function testAddColumn()
-    {
-        $beforeCount = count($this->dataTable->getColumns());
-
-        $column = new PhpGoogleCharts\Column(
-            PhpGoogleCharts\Column::TYPE_BOOLEAN,
-            'test'
-        );
-        $this->dataTable->addColumn($column);
-
-        $afterCount = count($this->dataTable->getColumns());
-
-        $this->assertEquals($beforeCount + 1, $afterCount);
-    }
-
-    public function testExceptionOnInvalidColumnType()
-    {
-        $this->setExpectedException('InvalidArgumentException');
-        $column = new PhpGoogleCharts\Column(
-            'invalid column type',
-            'test'
+        $this->chart = new PhpGoogleCharts\Chart(
+            'INVALID CHART TYPE!',
+            new DataTable\Data
         );
     }
 
-    public function testColumnToStringReturnsLabel()
+    public function testJsonIsValid()
     {
-        $label = 'test';
-        $column = new PhpGoogleCharts\Column(
-            PhpGoogleCharts\Column::TYPE_BOOLEAN,
-            $label
-        );
-
-        $this->assertEquals((string)$column, $column->getLabel());
+        json_decode($this->chart->convertDataToJson());
+        $this->assertSame(JSON_ERROR_NONE, json_last_error());
     }
 
-    public function testInsertRow()
+    public function testJsonIsProperlyFormatted()
     {
-        $this->dataTable->insertRow(new PhpGoogleCharts\Row);
-
-        $this->assertEquals(count($this->dataTable->getRows()), 1);
-    }
-
-    public function testSetCellWithSameColumnTypeOverridesPreviousCell()
-    {
-        $column = new PhpGoogleCharts\Column(
-            PhpGoogleCharts\Column::TYPE_BOOLEAN,
-            'test'
+        $this->assertJsonStringEqualsJsonFile(
+            'tests/fixtures/data.json',
+            $this->chart->convertDataToJson()
         );
-        $cell1 = new PhpGoogleCharts\Cell($column, true);
-        $cell2 = new PhpGoogleCharts\Cell($column, true);
-
-        $row = new PhpGoogleCharts\Row;
-        $row->setCell($cell1);
-        $row->setCell($cell2);
-
-        $this->assertNotSame(reset($row->getCells()), $cell1);
-        $this->assertSame(reset($row->getCells()), $cell2);
-
     }
 }
 
