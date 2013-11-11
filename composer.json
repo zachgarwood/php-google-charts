@@ -12,8 +12,8 @@
     ],
     "minimum-stability": "dev",
     "require": {
-        "php": "~5.4.0",
-        "zachgarwood/datatable": "~0.1"
+        "php": ">=5.4.0",
+        "zachgarwood/datatable": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "~3.7.0"    
